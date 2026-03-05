@@ -3,8 +3,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
+  Facebook,
   Heart,
+  Instagram,
+  Mail,
+  MapPin,
   Menu,
   Minus,
   Phone,
@@ -14,8 +19,9 @@ import {
   Trash2,
   User,
   X,
+  Youtube,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { CartItem, CategoryData, Product } from "./backend.d";
 import { useActor } from "./hooks/useActor";
@@ -979,104 +985,1349 @@ function ProductModal({ product, onClose }: ProductModalProps) {
   );
 }
 
-// ── Hero (Home) ───────────────────────────────────────────────────────────────
+// ── Hero Carousel ─────────────────────────────────────────────────────────────
 
-interface HeroProps {
+const HERO_SLIDES = [
+  {
+    src: "https://sisalfashion.com/uploads/banners/1768455643_5PjFxEK2_Untitled design(12).jpg",
+    alt: "Winter Collection Banner",
+  },
+  {
+    src: "https://sisalfashion.com/uploads/banners/1768455669_AAkflPlp_Untitled design(13).jpg",
+    alt: "Winter Collection for Children",
+  },
+  {
+    src: "https://sisalfashion.com/uploads/banners/1768455692_sqeUTVO5_Untitled design(14).jpg",
+    alt: "Winter Collection for Men",
+  },
+];
+
+interface HeroCarouselProps {
   onShopNow: () => void;
 }
 
-function Hero({ onShopNow }: HeroProps) {
+function HeroCarousel({ onShopNow }: HeroCarouselProps) {
+  const [current, setCurrent] = useState(0);
+  const total = HERO_SLIDES.length;
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % total);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [total]);
+
+  const prev = () => setCurrent((c) => (c - 1 + total) % total);
+  const next = () => setCurrent((c) => (c + 1) % total);
+
   return (
     <section
-      className="relative w-full overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(135deg, #00512c 0%, #0a7a44 50%, #00512c 100%)",
-        minHeight: "420px",
-      }}
+      className="relative w-full overflow-hidden bg-gray-100"
+      style={{ height: "clamp(260px, 55vw, 600px)" }}
     >
-      {/* Pattern overlay */}
-      <div
-        className="absolute inset-0 opacity-5"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-          backgroundSize: "20px 20px",
-        }}
-      />
+      {/* Slides */}
+      {HERO_SLIDES.map((slide, i) => (
+        <button
+          key={slide.src}
+          type="button"
+          data-ocid="hero.primary_button"
+          onClick={onShopNow}
+          className="absolute inset-0 w-full h-full border-0 p-0 cursor-pointer"
+          style={{
+            opacity: i === current ? 1 : 0,
+            transition: "opacity 0.7s ease-in-out",
+            zIndex: i === current ? 1 : 0,
+          }}
+          aria-label={slide.alt}
+        >
+          <img
+            src={slide.src}
+            alt={slide.alt}
+            className="w-full h-full object-cover object-center"
+            draggable={false}
+          />
+        </button>
+      ))}
 
-      <div className="relative max-w-7xl mx-auto px-6 py-16 md:py-24 flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
-        {/* Text */}
-        <div className="flex-1 text-center lg:text-left">
-          <p className="text-white/70 text-sm font-semibold tracking-[0.3em] uppercase mb-4">
-            New Collection 2025
-          </p>
-          <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4">
-            DRESS BETTER
-          </h1>
-          <p className="text-white/80 text-base md:text-lg leading-relaxed mb-8 max-w-md mx-auto lg:mx-0">
-            Explore the latest fashion for boys, girls &amp; men. Quality
-            clothing crafted for everyday style.
-          </p>
+      {/* Prev arrow */}
+      <button
+        type="button"
+        data-ocid="hero.secondary_button"
+        onClick={(e) => {
+          e.stopPropagation();
+          prev();
+        }}
+        className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-colors"
+        aria-label="Previous slide"
+      >
+        <ChevronLeft className="w-5 h-5 text-gray-700" />
+      </button>
+
+      {/* Next arrow */}
+      <button
+        type="button"
+        data-ocid="hero.secondary_button"
+        onClick={(e) => {
+          e.stopPropagation();
+          next();
+        }}
+        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-colors"
+        aria-label="Next slide"
+      >
+        <ChevronRight className="w-5 h-5 text-gray-700" />
+      </button>
+
+      {/* Dot indicators */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
+        {HERO_SLIDES.map((slide, i) => (
+          <button
+            key={slide.src}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrent(i);
+            }}
+            className={`rounded-full transition-all duration-300 ${
+              i === current
+                ? "w-6 h-2.5 bg-white"
+                : "w-2.5 h-2.5 bg-white/50 hover:bg-white/80"
+            }`}
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Categories Section ────────────────────────────────────────────────────────
+
+const STATIC_CATEGORIES = [
+  {
+    label: "BOYS",
+    key: "Boys",
+    image:
+      "https://sisalfashion.com/uploads/categories/1762867636_691339b4736ef.jpeg",
+  },
+  {
+    label: "GIRLS",
+    key: "Girls",
+    image:
+      "https://sisalfashion.com/uploads/categories/1762867547_6913395bde723.jpeg",
+  },
+  {
+    label: "MENS",
+    key: "Mens",
+    image:
+      "https://sisalfashion.com/uploads/categories/1762867424_691338e062971.jpeg",
+  },
+  {
+    label: "INFANT",
+    key: "Infant",
+    image: "/assets/uploads/1772703362453-1.png",
+  },
+];
+
+// ── Static Product & Category Data ───────────────────────────────────────────
+
+const STATIC_CATEGORY_DATA: CategoryData[] = [
+  { category: "Boys", subcategories: ["Hoodie", "Jogger", "Sweat Shirt"] },
+  { category: "Girls", subcategories: ["Hoodie", "Sweat Shirt"] },
+  {
+    category: "Mens",
+    subcategories: [
+      "Hoodie",
+      "Jogger",
+      "Long Sleeve T-Shirt",
+      "Mens Polo",
+      "Sweat Shirt",
+    ],
+  },
+  { category: "Infant", subcategories: ["Girls"] },
+];
+
+const STATIC_PRODUCTS: Product[] = [
+  // Boys > Hoodie (9 products)
+  {
+    id: 1001n,
+    name: "W5-BH: 01",
+    description: "95% Poly 5% Elastane Popcorn Design, 280 GSM",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Boys",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855837_69130b9d59743.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1002n,
+    name: "W5-BH: 02",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 420n,
+    originalPrice: 600n,
+    category: "Boys",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855772_69130b5ca6d8e.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1003n,
+    name: "W5-BH: 03",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 490n,
+    originalPrice: 700n,
+    category: "Boys",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856539_69130e5b2981e.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1004n,
+    name: "W5-BH: 04",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 420n,
+    originalPrice: 600n,
+    category: "Boys",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856502_69130e3630630.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1005n,
+    name: "W5-BH: 05",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Boys",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856472_69130e1861c53.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1006n,
+    name: "W5-BH: 06",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Boys",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856066_69130c824e6f4.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1007n,
+    name: "W5-BH: 07",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Boys",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855974_69130c26f11b4.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1008n,
+    name: "W5-BH: 08",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Boys",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855882_69130bca7ba9e.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1009n,
+    name: "W5-BH: 09",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 490n,
+    originalPrice: 700n,
+    category: "Boys",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1763185980_6918153cb3d56.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  // Boys > Jogger (6 products)
+  {
+    id: 1101n,
+    name: "W5-BJ: 01",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 385n,
+    originalPrice: 550n,
+    category: "Boys",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762865337_691330b99081c.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1102n,
+    name: "W5-BJ: 02",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 385n,
+    originalPrice: 550n,
+    category: "Boys",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762865196_6913302c196ad.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1103n,
+    name: "W5-BJ: 03",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Boys",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762865074_69132fb29d1a8.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1104n,
+    name: "W5-BJ: 04",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 350n,
+    originalPrice: 500n,
+    category: "Boys",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762864906_69132f0ab5203.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1105n,
+    name: "W5-BJ: 05",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 385n,
+    originalPrice: 550n,
+    category: "Boys",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762864634_69132dfabe78d.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1106n,
+    name: "W5-BJ: 06",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 385n,
+    originalPrice: 550n,
+    category: "Boys",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762864386_69132d0201d6e.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  // Boys > Sweat Shirt (8 products)
+  {
+    id: 1201n,
+    name: "W5-BST: 01",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Boys",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762861921_6913236148d01.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1202n,
+    name: "W5-BST: 02",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Boys",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762859587_69131a43c8fa8.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1203n,
+    name: "W5-BST: 03",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Boys",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762859198_691318be699d1.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1204n,
+    name: "W5-BST: 04",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Boys",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762858087_6913146775b6f.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1205n,
+    name: "W5-BST: 05",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 350n,
+    originalPrice: 500n,
+    category: "Boys",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762857540_691312448d5e9.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1206n,
+    name: "W5-BST: 06",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 385n,
+    originalPrice: 550n,
+    category: "Boys",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762857141_691310b541e98.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1207n,
+    name: "W5-BST: 07",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 350n,
+    originalPrice: 500n,
+    category: "Boys",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856819_69130f7313e6a.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 1208n,
+    name: "W5-BST: 08",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 350n,
+    originalPrice: 500n,
+    category: "Boys",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1763634281_691eec69b5edb.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  // Girls > Hoodie (9 products)
+  {
+    id: 2001n,
+    name: "W5-GH: 01",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 420n,
+    originalPrice: 600n,
+    category: "Girls",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855803_69130b7b6c429.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2002n,
+    name: "W5-GH: 02",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Girls",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762862062_691323ee4926a.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2003n,
+    name: "W5-GH: 03",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Girls",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762862284_691324cc13d3d.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2004n,
+    name: "W5-GH: 04",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 385n,
+    originalPrice: 550n,
+    category: "Girls",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762862497_691325a15e9bb.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2005n,
+    name: "W5-GH: 05",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Girls",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762862708_6913267434f03.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2006n,
+    name: "W5-GH: 06",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Girls",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762862901_6913273522dee.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2007n,
+    name: "W5-GH: 07",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 420n,
+    originalPrice: 600n,
+    category: "Girls",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762863100_691327fc3ba68.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2008n,
+    name: "W5-GH: 08",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Girls",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762863362_691329028debc.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2009n,
+    name: "W5-GH: 09",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 455n,
+    originalPrice: 650n,
+    category: "Girls",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762863621_69132a0579276.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  // Girls > Sweat Shirt (9 products)
+  {
+    id: 2101n,
+    name: "W5-GST: 01",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Girls",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762864412_69132d1ceedec.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2102n,
+    name: "W5-GST: 02",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Girls",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762864652_69132e0cf0d23.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2103n,
+    name: "W5-GST: 03",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Girls",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762864828_69132ebc4a3ff.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2104n,
+    name: "W5-GST: 04",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 406n,
+    originalPrice: 580n,
+    category: "Girls",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762865036_69132f8c9aea7.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2105n,
+    name: "W5-GST: 05",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 350n,
+    originalPrice: 500n,
+    category: "Girls",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762865236_69133054e2eab.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2106n,
+    name: "W5-GST: 06",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 350n,
+    originalPrice: 500n,
+    category: "Girls",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762865408_69133100cc4aa.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2107n,
+    name: "W5-GST: 07",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 350n,
+    originalPrice: 500n,
+    category: "Girls",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762865601_691331c1a1297.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2108n,
+    name: "W5-GST: 08",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 420n,
+    originalPrice: 600n,
+    category: "Girls",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762865787_6913327b10bed.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 2109n,
+    name: "W5-GST: 09",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 420n,
+    originalPrice: 600n,
+    category: "Girls",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762865965_6913332d11c7a.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  // Mens > Hoodie (21 products)
+  {
+    id: 3001n,
+    name: "W5-MH: 01",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 893n,
+    originalPrice: 1275n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855734_69130b363efd4.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3002n,
+    name: "W5-MH: 02",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 753n,
+    originalPrice: 1075n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856333_69130d8d222c6.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3003n,
+    name: "W5-MH: 03",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 753n,
+    originalPrice: 1075n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855920_69130bf02d742.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3004n,
+    name: "W5-MH: 04",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 753n,
+    originalPrice: 1075n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855947_69130c0b68133.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3005n,
+    name: "W5-MH: 05",
+    description: "Polyester Design Fabric",
+    price: 735n,
+    originalPrice: 1050n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856003_69130c4302d32.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3006n,
+    name: "W5-MH: 06",
+    description: "Polyester Design Fabric",
+    price: 770n,
+    originalPrice: 1100n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856025_69130c5902129.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3007n,
+    name: "W5-MH: 07",
+    description: "80% cotton 20% polyester 290 GSM QUILTED Fleece",
+    price: 875n,
+    originalPrice: 1250n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856104_69130ca838902.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3009n,
+    name: "W5-MH: 09",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 735n,
+    originalPrice: 1050n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856170_69130ceab451a.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3010n,
+    name: "W5-MH: 10",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 753n,
+    originalPrice: 1075n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856197_69130d0516185.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3011n,
+    name: "W5-MH: 11",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 735n,
+    originalPrice: 1050n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856222_69130d1ebda47.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3012n,
+    name: "W5-MH: 12",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 770n,
+    originalPrice: 1100n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856260_69130d446e41d.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3013n,
+    name: "W5-MH: 13",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 735n,
+    originalPrice: 1050n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856296_69130d6826dc1.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3014n,
+    name: "W5-MH: 14",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 858n,
+    originalPrice: 1225n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855667_69130af300dd8.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3015n,
+    name: "W5-MH: 15",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 560n,
+    originalPrice: 800n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762857465_691311f979f37.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3016n,
+    name: "W5-MH: 16",
+    description: "Polyester Design Fabric",
+    price: 805n,
+    originalPrice: 1150n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856398_69130dce2ce66.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3017n,
+    name: "W5-MH: 17",
+    description: "Polyester Design Fabric",
+    price: 805n,
+    originalPrice: 1150n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856365_69130dad5a51b.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3018n,
+    name: "W5-MH: 18",
+    description: "Polyester Design Fabric",
+    price: 805n,
+    originalPrice: 1150n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762855710_69130b1e3d97f.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3019n,
+    name: "W5-MH: 19",
+    description: "Polyester Design Fabric",
+    price: 875n,
+    originalPrice: 1250n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856442_69130dfa1f039.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3020n,
+    name: "W5-MH: 20",
+    description: "Polyester Design Fabric",
+    price: 805n,
+    originalPrice: 1150n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856583_69130e87e74ec.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3021n,
+    name: "W5-MH: 21",
+    description: "Polyester Design Fabric",
+    price: 875n,
+    originalPrice: 1250n,
+    category: "Mens",
+    subcategory: "Hoodie",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762857211_691310fb95adf.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  // Mens > Jogger (7 products)
+  {
+    id: 3101n,
+    name: "W5-MJ: 15",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 665n,
+    originalPrice: 950n,
+    category: "Mens",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762858817_691317412d83d.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3102n,
+    name: "W5-MJ: 16",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 665n,
+    originalPrice: 950n,
+    category: "Mens",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762859853_69131b4d0a8f1.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3103n,
+    name: "W5-MJ: 17",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 665n,
+    originalPrice: 950n,
+    category: "Mens",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762860771_69131ee32e061.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3104n,
+    name: "W5-MJ: 18",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 665n,
+    originalPrice: 950n,
+    category: "Mens",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762860943_69131f8f81249.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3105n,
+    name: "W5-MJ: 19",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 665n,
+    originalPrice: 950n,
+    category: "Mens",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762861103_6913202f1df76.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3106n,
+    name: "W5-MJ: 20",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 665n,
+    originalPrice: 950n,
+    category: "Mens",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762861257_691320c927f4f.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3107n,
+    name: "W5-MJ: 21",
+    description: "60% cotton 40% polyester French Terry, 280 GSM",
+    price: 665n,
+    originalPrice: 950n,
+    category: "Mens",
+    subcategory: "Jogger",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762861419_6913216b46384.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  // Mens > Long Sleeve T-Shirt (5 products)
+  {
+    id: 3201n,
+    name: "W5-MSL: 01",
+    description: "100% Cotton wafale, 200 GSM",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Mens",
+    subcategory: "Long Sleeve T-Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762866408_691334e879bf1.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3202n,
+    name: "W5-MSL: 02",
+    description: "100% Cotton wafale, 200 GSM",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Mens",
+    subcategory: "Long Sleeve T-Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762866589_6913359d7bf5e.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3203n,
+    name: "W5-MSL: 03",
+    description: "95% cotton 5% spandex 200 GSM",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Mens",
+    subcategory: "Long Sleeve T-Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762866795_6913366b7ed9b.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3204n,
+    name: "W5-MSL: 04",
+    description: "95% cotton 5% spandex 200 GSM",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Mens",
+    subcategory: "Long Sleeve T-Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762866999_69133737decf9.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3205n,
+    name: "W5-MSL: 05",
+    description: "95% cotton 5% spandex 200 GSM",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Mens",
+    subcategory: "Long Sleeve T-Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762867154_691337d2eb9f7.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  // Mens > Sweat Shirt (4 products)
+  {
+    id: 3301n,
+    name: "W5-MST: 01",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 805n,
+    originalPrice: 1150n,
+    category: "Mens",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856757_69130f35c8117.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3302n,
+    name: "W5-MST: 02",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 805n,
+    originalPrice: 1150n,
+    category: "Mens",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856928_69130fe09a58a.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3303n,
+    name: "W5-MST: 03",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 770n,
+    originalPrice: 1100n,
+    category: "Mens",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762856958_69130ffea0806.jpg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 3304n,
+    name: "W5-MST: 04",
+    description: "60% cotton 40% polyester 280 GSM Brushed Fleece",
+    price: 665n,
+    originalPrice: 950n,
+    category: "Mens",
+    subcategory: "Sweat Shirt",
+    imageUrl:
+      "https://sisalfashion.com/uploads/products/1762857795_6913134356ba7.jpeg",
+    isOnSale: true,
+    stock: 50n,
+  },
+  // Infant Girls > Clothing (6 products)
+  {
+    id: 4001n,
+    name: "Tropic Panda Adventure Set",
+    description:
+      'A vibrant teal blue outfit featuring a dress and matching capri leggings. The dress showcases a dynamic print of colorful tropical flowers, leaves, and pandas playing. The leggings include the same floral motif and a "FUN TIMES" graphic near the ankle.',
+    price: 250n,
+    originalPrice: 350n,
+    category: "Infant",
+    subcategory: "Girls",
+    imageUrl: "/assets/uploads/IMG_20260305_151624-3.png",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 4002n,
+    name: "Fluttering Butterfly Dream Dress",
+    description:
+      "A charming pink empire-waist dress adorned with a print of colorful monarch and swallowtail butterflies. The dress features short sleeves and a flared skirt.",
+    price: 275n,
+    originalPrice: 400n,
+    category: "Infant",
+    subcategory: "Girls",
+    imageUrl: "/assets/uploads/IMG_20260305_151700-2.png",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 4003n,
+    name: "Happy Days Splatter Tee and Shorts",
+    description:
+      'A cheerful and casual two-piece set in bright yellow. The short-sleeve top features a colorful watercolor paint splatter design with "HAPPY DAYS!" in bold white text. The matching shorts have a coordinating color-block pattern.',
+    price: 300n,
+    originalPrice: 430n,
+    category: "Infant",
+    subcategory: "Girls",
+    imageUrl: "/assets/uploads/IMG_20260305_151721-1.png",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 4004n,
+    name: "Panda Playtime Pajama Set",
+    description:
+      "A cozy green pajama set featuring an all-over repeating print of adorable pandas playing in bamboo. The set includes a short-sleeve top and matching long leggings.",
+    price: 315n,
+    originalPrice: 450n,
+    category: "Infant",
+    subcategory: "Girls",
+    imageUrl: "/assets/uploads/IMG_20260305_151740-6.png",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 4005n,
+    name: "Abstract Geo-Chic Tunic and Leggings",
+    description:
+      "A modern two-piece set with a striking abstract geometric pattern. The blue short-sleeve tunic dress features overlapping triangles and shapes in orange, purple, and red. Paired with solid blue leggings that include a small print detail near the cuff.",
+    price: 330n,
+    originalPrice: 470n,
+    category: "Infant",
+    subcategory: "Girls",
+    imageUrl: "/assets/uploads/IMG_20260305_151812-5.png",
+    isOnSale: true,
+    stock: 50n,
+  },
+  {
+    id: 4006n,
+    name: "Cosmic Adventure Awaits Set",
+    description:
+      'A whimsical purple two-piece set with a space theme. The short-sleeve top features various space-related graphics like rockets, planets, and stars. It also has "ADVENTURE AWAITS" text at the bottom, which is repeated on the matching purple leggings.',
+    price: 350n,
+    originalPrice: 500n,
+    category: "Infant",
+    subcategory: "Girls",
+    imageUrl: "/assets/uploads/IMG_20260305_151838-4.png",
+    isOnSale: true,
+    stock: 50n,
+  },
+];
+
+interface CategoriesSectionProps {
+  onNavigate: (page: Page, category?: string) => void;
+}
+
+function CategoriesSection({ onNavigate }: CategoriesSectionProps) {
+  return (
+    <section className="bg-white py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight">
+            Categories
+          </h2>
           <button
             type="button"
-            data-ocid="hero.primary_button"
-            onClick={onShopNow}
-            className="inline-flex items-center gap-2 bg-white text-[oklch(var(--green-dark))] font-bold text-sm px-8 py-3.5 rounded-full hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            data-ocid="categories.link"
+            onClick={() => onNavigate("products")}
+            className="text-sm font-semibold text-[oklch(var(--green-dark))] hover:underline flex items-center gap-1"
           >
-            Shop Now
-            <ChevronRight className="w-4 h-4" />
+            View All <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Image placeholder - brand pattern */}
-        <div className="flex-shrink-0 lg:w-80 xl:w-96">
-          <div className="aspect-square rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
-            <img
-              src="/assets/generated/hero-fashion.dim_600x600.jpg"
-              alt="Sisal Fashion Collection"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const el = e.currentTarget as HTMLImageElement;
-                el.style.display = "none";
-                const parent = el.parentElement;
-                if (parent) {
-                  parent.style.background = "rgba(255,255,255,0.1)";
-                  parent.innerHTML = `<div class="flex items-center justify-center h-full text-white/50 text-6xl">👗</div>`;
-                }
-              }}
-            />
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {STATIC_CATEGORIES.map((cat, i) => (
+            <button
+              key={cat.key}
+              type="button"
+              data-ocid={`categories.item.${i + 1}`}
+              onClick={() => onNavigate("products", cat.key)}
+              className="group rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 bg-white text-left"
+            >
+              <div className="aspect-square overflow-hidden bg-gray-100 relative">
+                {cat.image ? (
+                  <img
+                    src={cat.image}
+                    alt={cat.label}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display =
+                        "none";
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-4xl">
+                    👶
+                  </div>
+                )}
+              </div>
+              <div className="p-3 text-center">
+                <span className="text-sm font-bold text-gray-800 tracking-wide uppercase">
+                  {cat.label}
+                </span>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-// ── Featured Products ─────────────────────────────────────────────────────────
+// ── New Arrivals Section ──────────────────────────────────────────────────────
 
-interface FeaturedProductsProps {
+interface ProductGridSectionProps {
+  title: string;
+  products: Product[];
+  isLoading: boolean;
   onViewDetails: (product: Product) => void;
   onNavigate: (page: Page) => void;
+  scopeId: string;
 }
 
-function FeaturedProducts({
+function ProductGridSection({
+  title,
+  products,
+  isLoading,
   onViewDetails,
   onNavigate,
-}: FeaturedProductsProps) {
-  const { data: products = [], isLoading } = useProducts();
-  const featured = products.slice(0, 6);
-
+  scopeId,
+}: ProductGridSectionProps) {
   return (
-    <section className="bg-white py-12 px-4">
+    <section className="bg-white py-8 px-4 border-t border-gray-100">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">
-            Featured Products
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight">
+            {title}
           </h2>
           <button
             type="button"
-            data-ocid="products.link"
+            data-ocid={`${scopeId}.link`}
             onClick={() => onNavigate("products")}
             className="text-sm font-semibold text-[oklch(var(--green-dark))] hover:underline flex items-center gap-1"
           >
@@ -1086,26 +2337,26 @@ function FeaturedProducts({
 
         {isLoading ? (
           <div
-            data-ocid="products.loading_state"
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4"
+            data-ocid={`${scopeId}.loading_state`}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
           >
-            {Array.from({ length: 6 }, (_, i) => i).map((i) => (
-              <ProductCardSkeleton key={`feat-skel-${i}`} />
+            {Array.from({ length: 8 }, (_, i) => i).map((i) => (
+              <ProductCardSkeleton key={`${scopeId}-skel-${i}`} />
             ))}
           </div>
-        ) : featured.length === 0 ? (
+        ) : products.length === 0 ? (
           <div
-            data-ocid="products.empty_state"
-            className="text-center py-16 text-gray-400"
+            data-ocid={`${scopeId}.empty_state`}
+            className="text-center py-12 text-gray-400"
           >
             <p className="font-semibold">No products yet. Check back soon!</p>
           </div>
         ) : (
           <div
-            data-ocid="products.list"
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4"
+            data-ocid={`${scopeId}.list`}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
           >
-            {featured.map((product, i) => (
+            {products.map((product, i) => (
               <ProductCard
                 key={Number(product.id)}
                 product={product}
@@ -1115,6 +2366,163 @@ function FeaturedProducts({
             ))}
           </div>
         )}
+      </div>
+    </section>
+  );
+}
+
+// ── Promo Banners data ────────────────────────────────────────────────────────
+
+const PROMO_BANNERS = [
+  {
+    src: "https://sisalfashion.com/uploads/banners/1763183072_98rCMJNa_sisal banner 13 nov_.jpg",
+    alt: "Sisal Fashion Promo Banner 1",
+  },
+  {
+    src: "https://sisalfashion.com/uploads/banners/1763270338_yMNAxQLA_sisal bannner 15 nov_.jpg",
+    alt: "Sisal Fashion Promo Banner 2",
+  },
+  {
+    src: "https://sisalfashion.com/uploads/banners/1763270431_VAClRbZr_sisal 15 nov. banner 2.jpg",
+    alt: "Sisal Fashion Promo Banner 3",
+  },
+];
+
+// ── Collections Section (YouTube Video) ──────────────────────────────────────
+
+interface CollectionsSectionProps {
+  onNavigate: (page: Page) => void;
+}
+
+function CollectionsSection({ onNavigate }: CollectionsSectionProps) {
+  return (
+    <section className="bg-white py-8 px-4 border-t border-gray-100">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight">
+            Collections
+          </h2>
+          <button
+            type="button"
+            data-ocid="collections.link"
+            onClick={() => onNavigate("products")}
+            className="text-sm font-semibold text-[oklch(var(--green-dark))] hover:underline flex items-center gap-1"
+          >
+            View All <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+        <div
+          className="relative w-full rounded-xl overflow-hidden shadow-sm"
+          style={{ paddingBottom: "56.25%" }}
+        >
+          <iframe
+            src="https://www.youtube.com/embed/uikq_pUbayk"
+            title="Sisal Fashion Collections"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+            style={{ border: 0 }}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Big Deals Section ─────────────────────────────────────────────────────────
+
+interface BigDealsSectionProps {
+  products: Product[];
+  onViewDetails: (product: Product) => void;
+  onNavigate: (page: Page) => void;
+}
+
+function BigDealsSection({
+  products,
+  onViewDetails,
+  onNavigate,
+}: BigDealsSectionProps) {
+  return (
+    <section className="bg-[oklch(var(--green-bg))] py-8 px-4 border-t border-gray-100">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🔥</span>
+            <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 tracking-tight">
+              Big Deals
+            </h2>
+          </div>
+          <button
+            type="button"
+            data-ocid="deals.link"
+            onClick={() => onNavigate("best-deals")}
+            className="text-sm font-semibold text-[oklch(var(--green-dark))] hover:underline flex items-center gap-1"
+          >
+            View All <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {products.length === 0 ? (
+          <div
+            data-ocid="deals.empty_state"
+            className="text-center py-10 text-gray-400"
+          >
+            <p className="font-semibold">
+              No deals right now. Check back soon!
+            </p>
+          </div>
+        ) : (
+          <div
+            data-ocid="deals.list"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
+            {products.map((product, i) => (
+              <ProductCard
+                key={Number(product.id)}
+                product={product}
+                index={i + 1}
+                onViewDetails={onViewDetails}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ── Bottom Banners ────────────────────────────────────────────────────────────
+
+interface BottomBannersProps {
+  onNavigate: (page: Page) => void;
+}
+
+function BottomBanners({ onNavigate }: BottomBannersProps) {
+  return (
+    <section className="bg-white py-8 px-4 border-t border-gray-100">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {PROMO_BANNERS.map((banner, i) => (
+            <button
+              key={banner.src}
+              type="button"
+              data-ocid={`promo.item.${i + 1}`}
+              onClick={() => onNavigate("products")}
+              className="block overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 border-0 p-0 cursor-pointer"
+            >
+              <div
+                className="relative w-full"
+                style={{ paddingBottom: "56.25%" }}
+              >
+                <img
+                  src={banner.src}
+                  alt={banner.alt}
+                  className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -1133,7 +2541,7 @@ function ProductsPage({
   initialSubcategory,
   onViewDetails,
 }: ProductsPageProps) {
-  const { data: categories = [] } = useCategories();
+  const categories = STATIC_CATEGORY_DATA;
   const [activeCategory, setActiveCategory] = useState<string>(
     initialCategory || "All",
   );
@@ -1147,9 +2555,13 @@ function ProductsPage({
     if (initialSubcategory) setActiveSubcategory(initialSubcategory);
   }, [initialCategory, initialSubcategory]);
 
-  const { data: products = [], isLoading } = useProductsByCategory(
-    activeCategory === "All" ? "" : activeCategory,
-  );
+  const products = useMemo(() => {
+    if (!activeCategory || activeCategory === "All") return STATIC_PRODUCTS;
+    return STATIC_PRODUCTS.filter(
+      (p) => p.category.toLowerCase() === activeCategory.toLowerCase(),
+    );
+  }, [activeCategory]);
+  const isLoading = false;
 
   // Further filter by subcategory client-side
   const displayed =
@@ -1282,7 +2694,8 @@ interface BestDealsPageProps {
 }
 
 function BestDealsPage({ onViewDetails }: BestDealsPageProps) {
-  const { data: products = [], isLoading } = useBestDeals();
+  const products = STATIC_PRODUCTS.filter((p) => p.isOnSale);
+  const isLoading = false;
 
   return (
     <section className="bg-[oklch(var(--green-bg))] min-h-screen py-8 px-4">
@@ -1517,71 +2930,169 @@ function Footer({ onNavigate }: FooterProps) {
 
   return (
     <footer
-      className="text-white py-12 px-4"
+      className="text-white pt-12 pb-6 px-4"
       style={{
         background: "linear-gradient(135deg, #00512c 0%, #0a7a44 100%)",
       }}
     >
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          {/* Brand */}
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
+          {/* Column 1 — Brand */}
+          <div>
             <img
               src="https://sisalfashion.com/uploads/settings/logo_68d0f3fa88085.png"
               alt="Sisal Fashion"
-              width={120}
-              height={48}
-              className="h-10 w-auto object-contain mb-4 brightness-200"
+              width={140}
+              height={55}
+              className="h-12 w-auto object-contain mb-4 brightness-200"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = "none";
               }}
             />
-            <h3 className="text-xl font-extrabold mb-2">Sisal Fashion</h3>
-            <p className="text-sm text-white/70 leading-relaxed max-w-sm">
-              <em>Dress Better</em> — Your destination for quality fashion for
-              boys, girls &amp; men. Affordable style delivered to your door.
+            <p className="text-sm text-white/70 leading-relaxed mb-5">
+              Your trusted partner for fashion and styles
             </p>
+            {/* Social icons */}
+            <div className="flex items-center gap-3">
+              <a
+                href="https://facebook.com/sisalfashion"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-ocid="footer.link"
+                className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-4 h-4 text-white" />
+              </a>
+              <a
+                href="https://www.instagram.com/sisalfashion/"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-ocid="footer.link"
+                className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4 text-white" />
+              </a>
+              <a
+                href="https://www.youtube.com/@Sisalfashion"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-ocid="footer.link"
+                className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center transition-colors"
+                aria-label="YouTube"
+              >
+                <Youtube className="w-4 h-4 text-white" />
+              </a>
+              <a
+                href="https://wa.me/8801312-809597"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-ocid="footer.link"
+                className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center transition-colors"
+                aria-label="WhatsApp"
+              >
+                <Phone className="w-4 h-4 text-white" />
+              </a>
+            </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Column 2 — Quick Links */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-white/60 mb-4">
               Quick Links
             </h4>
-            <ul className="space-y-2">
-              {[
-                { label: "Home", page: "home" as Page },
-                { label: "Products", page: "products" as Page },
-                { label: "Best Deals", page: "best-deals" as Page },
-                { label: "Contact", page: "contact" as Page },
-              ].map((item) => (
-                <li key={item.label}>
-                  <button
-                    type="button"
-                    data-ocid="footer.link"
-                    onClick={() => onNavigate(item.page)}
-                    className="text-sm text-white/70 hover:text-white transition-colors"
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
+            <ul className="space-y-2.5">
+              <li>
+                <button
+                  type="button"
+                  data-ocid="footer.link"
+                  onClick={() => onNavigate("products")}
+                  className="text-sm text-white/70 hover:text-white transition-colors"
+                >
+                  All Products
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  data-ocid="footer.link"
+                  className="text-sm text-white/70 hover:text-white transition-colors cursor-default"
+                >
+                  Visual Stories
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  data-ocid="footer.link"
+                  className="text-sm text-white/70 hover:text-white transition-colors cursor-default"
+                >
+                  About Us
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Column 3 — Customer Service */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-white/60 mb-4">
-              Contact
+              Customer Service
             </h4>
-            <ul className="space-y-2 text-sm text-white/70">
-              <li>📧 info@sisalfashion.com</li>
-              <li>🌐 sisalfashion.com</li>
+            <ul className="space-y-2.5">
+              <li>
+                <button
+                  type="button"
+                  data-ocid="footer.link"
+                  onClick={() => onNavigate("contact")}
+                  className="text-sm text-white/70 hover:text-white transition-colors"
+                >
+                  Contact Us
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  data-ocid="footer.link"
+                  className="text-sm text-white/70 hover:text-white transition-colors cursor-default"
+                >
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  data-ocid="footer.link"
+                  className="text-sm text-white/70 hover:text-white transition-colors cursor-default"
+                >
+                  Terms &amp; Conditions
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4 — Contact Info */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-widest text-white/60 mb-4">
+              Contact Info
+            </h4>
+            <ul className="space-y-3 text-sm text-white/70">
+              <li className="flex items-start gap-2">
+                <Mail className="w-4 h-4 mt-0.5 flex-shrink-0 opacity-60" />
+                <span>admin@sisalfashion.com</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 opacity-60" />
+                <span className="leading-relaxed">
+                  Head Office &amp; Factory: Purbahati, Natunpara, Hemayetpur,
+                  Savar Dhaka-1340
+                </span>
+              </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom */}
+        {/* Bottom bar */}
         <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
           <p>© {year} Sisal Fashion. All rights reserved.</p>
           <p>
@@ -1605,6 +3116,84 @@ function Footer({ onNavigate }: FooterProps) {
 
 type Page = "home" | "products" | "best-deals" | "contact";
 
+// ── Home Content ──────────────────────────────────────────────────────────────
+
+interface HomeContentProps {
+  onShopNow: () => void;
+  onViewDetails: (product: Product) => void;
+  onNavigate: (page: Page, category?: string) => void;
+}
+
+function HomeContent({
+  onShopNow,
+  onViewDetails,
+  onNavigate,
+}: HomeContentProps) {
+  const allProducts = STATIC_PRODUCTS;
+
+  // New Arrivals: 2 from each of Boys, Girls, Mens, Infant = up to 8 mixed products
+  const newArrivals = [
+    ...allProducts.filter((p) => p.category === "Boys").slice(0, 2),
+    ...allProducts.filter((p) => p.category === "Girls").slice(0, 2),
+    ...allProducts.filter((p) => p.category === "Mens").slice(0, 2),
+    ...allProducts.filter((p) => p.category === "Infant").slice(0, 2),
+  ];
+
+  // Top Selling: 2 from each category from a different offset
+  const topSelling = [
+    ...allProducts.filter((p) => p.category === "Boys").slice(2, 4),
+    ...allProducts.filter((p) => p.category === "Girls").slice(2, 4),
+    ...allProducts.filter((p) => p.category === "Mens").slice(2, 4),
+    ...allProducts.filter((p) => p.category === "Infant").slice(2, 4),
+  ];
+
+  // Big Deals: 2 from each category (on sale products at different offsets)
+  const bigDeals = [
+    ...allProducts
+      .filter((p) => p.category === "Boys" && p.isOnSale)
+      .slice(4, 6),
+    ...allProducts
+      .filter((p) => p.category === "Girls" && p.isOnSale)
+      .slice(4, 6),
+    ...allProducts
+      .filter((p) => p.category === "Mens" && p.isOnSale)
+      .slice(4, 6),
+    ...allProducts
+      .filter((p) => p.category === "Infant" && p.isOnSale)
+      .slice(0, 2),
+  ];
+
+  return (
+    <>
+      <HeroCarousel onShopNow={onShopNow} />
+      <CategoriesSection onNavigate={onNavigate} />
+      <ProductGridSection
+        title="New Arrivals"
+        products={newArrivals}
+        isLoading={false}
+        onViewDetails={onViewDetails}
+        onNavigate={onNavigate}
+        scopeId="new-arrivals"
+      />
+      <ProductGridSection
+        title="Top Selling Products"
+        products={topSelling}
+        isLoading={false}
+        onViewDetails={onViewDetails}
+        onNavigate={onNavigate}
+        scopeId="top-selling"
+      />
+      <CollectionsSection onNavigate={onNavigate} />
+      <BigDealsSection
+        products={bigDeals}
+        onViewDetails={onViewDetails}
+        onNavigate={onNavigate}
+      />
+      <BottomBanners onNavigate={onNavigate} />
+    </>
+  );
+}
+
 // ── App ───────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -1617,7 +3206,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const { data: categories = [] } = useCategories();
+  const categories = STATIC_CATEGORY_DATA;
   const { data: cartItems = [] } = useCart();
 
   const cartCount = cartItems.reduce((sum, item) => sum + Number(item.qty), 0);
@@ -1659,13 +3248,11 @@ export default function App() {
 
       <main className="flex-1" ref={productsRef}>
         {page === "home" && (
-          <>
-            <Hero onShopNow={handleShopNow} />
-            <FeaturedProducts
-              onViewDetails={setSelectedProduct}
-              onNavigate={navigate}
-            />
-          </>
+          <HomeContent
+            onShopNow={handleShopNow}
+            onViewDetails={setSelectedProduct}
+            onNavigate={navigate}
+          />
         )}
         {page === "products" && (
           <ProductsPage
